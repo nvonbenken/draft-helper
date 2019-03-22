@@ -14,5 +14,8 @@
     "json2csv": "^4.3.5",
     "puppeteer": "^1.13.0",
     "typescript": "^3.3.4000"
+  },
+  "devDependencies": {
+    "@types/node": "^11.11.5"
   }
 }

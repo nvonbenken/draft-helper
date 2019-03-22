@@ -1,6 +1,6 @@
-const puppeteer = require("puppeteer");
-const fs = require("fs");
-const json2csv = require("json2csv").parse;
+import puppeteer from "puppeteer";
+import fs from "fs";
+import {parse} from "json2csv";
 
 // const urls = {
 //   2018: {
@@ -26,7 +26,7 @@ const json2csv = require("json2csv").parse;
 
 // const config = [{ leagueName, year, scrapeFromUrl, pushToUrl }];
 
-module.exports = {
+export default {
   GetDraftData: function(data) {
     for (var league in data) {
       console.log(league);
