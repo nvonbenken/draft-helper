@@ -1,7 +1,7 @@
-const fs = require("fs");
-const clickyDraftScraper = require("./scrape/clickyDraft.ts");
+import fs from "fs";
+import clickyDraftScraper from "./scrape/clickyDraft";
 
-fs.readFile("./settings/config.json", "utf8", (err, data) => {
+fs.readFile("./settings/config.json", "utf8", (err: any, data: string) => {
   if (err) {
     console.log(err);
   } else {

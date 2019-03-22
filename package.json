@@ -11,8 +11,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/puppeteer": "^1.12.3",
     "json2csv": "^4.3.5",
     "puppeteer": "^1.13.0",
+    "tslint": "^5.14.0",
     "typescript": "^3.3.4000"
+  },
+  "devDependencies": {
+    "@types/json2csv": "^4.2.0",
+    "@types/node": "^11.11.5",
+    "prettier": "^1.16.4"
   }
 }

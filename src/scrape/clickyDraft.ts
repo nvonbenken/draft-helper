@@ -1,5 +1,11 @@
-const puppeteer = require("puppeteer");
-const fs = require("fs");
+import { Config } from "../config";
+
+import puppeteer from "puppeteer";
+import fs from "fs";
+import { Pick } from "./clickydraft/pick";
+import { Draft } from "./clickydraft/draft";
+import MapPosition from "./position-map";
+// tslint:disable-next-line:typedef
 const json2csv = require("json2csv").parse;
 
 // const urls = {
@@ -26,17 +32,17 @@ const json2csv = require("json2csv").parse;
 
 // const config = [{ leagueName, year, scrapeFromUrl, pushToUrl }];
 
-module.exports = {
-  GetDraftData: function(data) {
+export default {
+  GetDraftData: function(data: Config[]): void {
     for (var league in data) {
-      console.log(league);
+      if (league) {
+        console.log(league);
+      }
     }
   }
 };
 
-const sortPicks = picks => picks.sort((a, b) => a.overall - b.overall);
-
-const saveJson = (result, name) => {
+const saveJson: Function = (result: Draft, name: string) => {
   fs.writeFile(
     `output/2019/json/output-${name}.json`,
     JSON.stringify(result),
@@ -48,8 +54,8 @@ const saveJson = (result, name) => {
   );
 };
 
-const saveCsv = (picks, name) => {
-  const csv = json2csv(picks, [
+const saveCsv: Function = (picks: Pick[], name: string) => {
+  const csv: any = json2csv(picks, [
     "Drafted By",
     "Overall",
     "Round",
@@ -65,11 +71,11 @@ const saveCsv = (picks, name) => {
   });
 };
 
-const scrape = async (url, name) => {
-  const browser = await puppeteer.launch({
+const scrape: Function = async (url: string, name: string) => {
+  const browser: any = await puppeteer.launch({
     headless: true
   });
-  const page = await browser.newPage();
+  const page: any = await browser.newPage();
 
   await page.goto(url);
   await page.setViewport({
@@ -80,56 +86,47 @@ const scrape = async (url, name) => {
     path: `output/2019/screenshots/${name}.png`
   });
 
-  const result = await page.evaluate(() => {
-    const draft = {
-      teams: [],
-      picks: []
-    };
-
-    const outfield = ["LF", "CF", "RF"];
+  const result: Draft = await page.evaluate(() => {
+    const draft: Draft = new Draft();
 
     [].slice
       .call(document.querySelectorAll(".boardData"))
       .slice(0, 12)
       .forEach(el => {
-        draft.teams.push(el.innerText.trim());
+        draft.Teams.push(el.innerText.trim());
       });
 
     [].slice.call(document.querySelectorAll(".playerPicked")).forEach(p => {
-      const pickNum = p.id.match(/\d+/)[0];
-      const round =
+      const pickNum: string = p.id.match(/\d+/)[0];
+      const pick: number = parseInt(pickNum.substring(2), 10);
+      const round: number =
         pickNum.length === 4
           ? parseInt(pickNum.substring(0, 1), 10)
           : parseInt(pickNum.substring(0, 2), 10);
 
-      const pick = parseInt(pickNum.substring(2), 10);
+      let draftedBy: string =
+        draft.Teams[round % 2 === 0 ? 12 - pick : pick - 1];
+      let overall: number = (round - 1) * 12 + pick;
+      let player: string = `${p
+        .querySelector(".playerFName")
+        .innerText.trim()} ${p.querySelector(".playerLName").innerText.trim()}`;
+      let position: string = MapPosition(
+        p.querySelector(".playerPos").innerText.trim()
+      );
+      let team: string = p.querySelector(".playerTeam").innerText.trim();
 
-      draft.picks.push({
-        draftedBy: draft.teams[round % 2 === 0 ? 12 - pick : pick - 1],
-        overall: (round - 1) * 12 + pick,
-        round,
-        pick,
-        player: `${p
-          .querySelector(".playerFName")
-          .innerText.trim()} ${p
-          .querySelector(".playerLName")
-          .innerText.trim()}`,
-        position: outfield.includes(
-          p.querySelector(".playerPos").innerText.trim()
-        )
-          ? "OF"
-          : p.querySelector(".playerPos").innerText.trim(),
-        team: p.querySelector(".playerTeam").innerText.trim()
-      });
+      draft.Picks.push(
+        new Pick(draftedBy, overall, round, pick, player, position, team)
+      );
+
+      return draft;
     });
 
-    return draft;
+    browser.close();
+    result.Picks.sort((a: Pick, b: Pick) => a.Overall - b.Overall);
+    saveJson(result, name);
+    saveCsv(result.Picks, name);
+
+    return result;
   });
-
-  browser.close();
-  result.picks = sortPicks(result.picks);
-  saveJson(result, name);
-  saveCsv(result.picks, name);
-
-  return result;
 };
