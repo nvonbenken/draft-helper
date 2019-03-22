@@ -1,12 +1,12 @@
 export class Config {
-  Teams: ConfigItem[]
+  Leagues: ConfigItem[];
 
   constructor() {
-    this.Teams = [];
+    this.Leagues = [];
   }
 }
 
-class ConfigItem {
+export class ConfigItem {
   LeagueName: string;
   Year: number;
   ScrapeFromUrl: string;

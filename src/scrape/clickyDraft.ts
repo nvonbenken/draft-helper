@@ -1,4 +1,4 @@
-import { Config } from "../config";
+import { Config, ConfigItem } from "../config";
 
 import puppeteer from "puppeteer";
 import fs from "fs";
@@ -33,18 +33,19 @@ const json2csv = require("json2csv").parse;
 // const config = [{ leagueName, year, scrapeFromUrl, pushToUrl }];
 
 export default {
-  GetDraftData: function(data: Config[]): void {
-    for (var league in data) {
+  GetDraftData: function(leagues: Config[]): void {
+    for (var league in leagues) {
       if (league) {
         console.log(league);
+        scrape(league);
       }
     }
   }
 };
 
-const saveJson: Function = (result: Draft, name: string) => {
+const saveJson: Function = (result: Draft, league: ConfigItem) => {
   fs.writeFile(
-    `output/2019/json/output-${name}.json`,
+    `output/${league.LeagueName}/${league.Year}/${league.LeagueName}.json`,
     JSON.stringify(result),
     error => {
       if (error) {
@@ -54,7 +55,7 @@ const saveJson: Function = (result: Draft, name: string) => {
   );
 };
 
-const saveCsv: Function = (picks: Pick[], name: string) => {
+const saveCsv: Function = (picks: Pick[], league: ConfigItem) => {
   const csv: any = json2csv(picks, [
     "Drafted By",
     "Overall",
@@ -64,26 +65,26 @@ const saveCsv: Function = (picks: Pick[], name: string) => {
     "Position",
     "Team"
   ]);
-  fs.writeFile(`output/2019/csv/${name}.csv`, csv, error => {
+  fs.writeFile(`output/${league.LeagueName}/${league.Year}/${league.LeagueName}.csv`, csv, error => {
     if (error) {
       return console.log(error);
     }
   });
 };
 
-const scrape: Function = async (url: string, name: string) => {
+const scrape: Function = async (league: ConfigItem) => {
   const browser: any = await puppeteer.launch({
     headless: true
   });
   const page: any = await browser.newPage();
 
-  await page.goto(url);
+  await page.goto(league.ScrapeFromUrl);
   await page.setViewport({
     width: 1200,
     height: 1160
   });
   await page.screenshot({
-    path: `output/2019/screenshots/${name}.png`
+    path: `output/${league.LeagueName}/${league.Year}/${league.LeagueName}.png`
   });
 
   const result: Draft = await page.evaluate(() => {
@@ -124,8 +125,8 @@ const scrape: Function = async (url: string, name: string) => {
 
     browser.close();
     result.Picks.sort((a: Pick, b: Pick) => a.Overall - b.Overall);
-    saveJson(result, name);
-    saveCsv(result.Picks, name);
+    saveJson(result, league);
+    saveCsv(result.Picks, league);
 
     return result;
   });
