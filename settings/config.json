@@ -1,0 +1,14 @@
+[
+  {
+    "LeagueName": "Prodigy",
+    "Year": "2018",
+    "ScrapeFromUrl": "https://clickydraft.com/draftapp/board/99555",
+    "PushToUrl": ""
+  },
+  {
+    "LeagueName": "Prodigy",
+    "Year": "2019",
+    "ScrapeFromUrl": "https://clickydraft.com/draftapp/board/135073",
+    "PushToUrl": ""
+  }
+]
